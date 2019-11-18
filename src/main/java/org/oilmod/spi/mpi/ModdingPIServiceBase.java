@@ -8,13 +8,21 @@ import org.oilmod.spi.dependencies.IDependency;
 import java.util.Collections;
 import java.util.Set;
 
+import static org.oilmod.util.LazyString.lazy;
+
 public abstract class ModdingPIServiceBase<MPI extends ModdingPIServiceBase<MPI, Provider>, Provider extends IMPIImplementationProvider<MPI, Provider, ? extends Provider>> implements IModdingPIService<MPI, Provider> {
     private final Set<Provider> providers = new ObjectOpenHashSet<>();
+    private final Class<MPI> mpiClass;
+    private final Class<Provider> providerClass;
 
+    protected ModdingPIServiceBase(Class<MPI> mpiClass, Class<Provider> providerClass) {
+        this.mpiClass = mpiClass;
+        this.providerClass = providerClass;
+    }
 
     @Override
     public void addProvider(Provider provider) {
-        Validate.isTrue(acceptMultiple() || providers.size() == 0, "Cannot set more than 1 provider! %s & %s ", providers.iterator().next(), provider);
+        Validate.isTrue(acceptMultiple() || providers.size() == 0, "Cannot set more than 1 provider for API %s! Got %s & %s ", getMPIClass().getSimpleName() , lazy(()->providers.iterator().next()), provider);
         providers.add(provider);
     }
 
@@ -23,13 +31,15 @@ public abstract class ModdingPIServiceBase<MPI extends ModdingPIServiceBase<MPI,
         return Collections.unmodifiableSet(providers);
     }
 
-    @Override
-    public void setDependencies() {
 
+    @Override
+    public Class<Provider> getProviderClass() {
+        return providerClass;
     }
 
     @Override
-    public Set<IDependency> getAllDependencies() {
-        return null;
+    public Class<MPI> getMPIClass() {
+        return mpiClass;
     }
+
 }

@@ -3,18 +3,16 @@ package org.oilmod.spi.dependencies;
 import java.util.function.Consumer;
 
 public class DependencySimple<Dependency> extends DependencyBase<Dependency> {
-    private final IDependent dependent;
     private final boolean allowSubType;
 
-    public DependencySimple(IDependent dependent, Class<Dependency> dependency, boolean allowSubType, Consumer<Dependency> dependencyConsumer) {
-        super(dependency, dependencyConsumer);
-        this.dependent = dependent;
+    public DependencySimple(Class<Dependency> dependency, Consumer<Dependency> dependencyConsumer, IDependent dependent, boolean allowSubType, boolean singleResolve) {
+        super(dependency, dependencyConsumer, dependent, singleResolve);
         this.allowSubType = allowSubType;
     }
 
 
-    public DependencySimple(IDependent dependent, Class<Dependency> dependency, boolean allowSubType) {
-        this(dependent, dependency, allowSubType, (d)->{});
+    public DependencySimple(Class<Dependency> dependency, IDependent dependent, boolean allowSubType, boolean singleResolve) {
+        this(dependency, (d)->{}, dependent, allowSubType, singleResolve);
     }
 
 
@@ -24,12 +22,8 @@ public class DependencySimple<Dependency> extends DependencyBase<Dependency> {
     }
 
     @Override
-    public boolean checkCandidate(Dependency candidate) {
+    public boolean checkCandidate(Dependency candidate, boolean ready) {
         return true;
     }
 
-    @Override
-    public IDependent getDependent() {
-        return dependent;
-    }
 }

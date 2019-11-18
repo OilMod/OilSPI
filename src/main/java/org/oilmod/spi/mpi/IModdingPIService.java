@@ -12,8 +12,6 @@ public interface IModdingPIService<MPI extends IModdingPIService<MPI, Provider>,
     void addProvider(Provider provider);
     Set<Provider> getAllProviders();
     default void setup(){}
-    void setDependencies();
-    Set<IDependency> getAllDependencies();
 
     @Override
     default Class[] getDependentIdentifierClasses() {

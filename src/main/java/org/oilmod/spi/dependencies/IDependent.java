@@ -1,7 +1,10 @@
 package org.oilmod.spi.dependencies;
 
 public interface IDependent {
-    <Dependency> void onResolved(IDependency dependencyHolder, Dependency resolvedDependency);
-    void allDepResolved();
+    default <Dependency> void onResolved(IDependency<Dependency> dependencyHolder, Dependency resolvedDependency) {}
+    default void allDepResolved() {
+        System.out.println("all dependencies got resolved! " + getClass().getSimpleName());
+    }
     Class[] getDependentIdentifierClasses();
+    default void addDependencies(DependencyPipe p) {}
 }
