@@ -20,6 +20,7 @@ public class TestMPI extends SingleMPI<TestMPI, TestMPI.TestHelper<?>> {
     public void addDependencies(DependencyPipe p) {
         p.add(TestMPIProvider2.class);
         p.add(String.class, this::stringMessageHandler, false, false);
+        p.add(String.class, this::stringMessageHandler, false, false);
     }
 
     private void stringMessageHandler(String s) {

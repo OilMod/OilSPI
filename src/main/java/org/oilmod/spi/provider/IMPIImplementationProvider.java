@@ -23,7 +23,7 @@ public interface IMPIImplementationProvider<MPI extends IModdingPIService<MPI, I
 
     @Override
     default Class[] getDependentIdentifierClasses() {
-        return new Class[]{getImplementationBaseClass(), getImplementationClass()}; //two identifiers Base and MBI have 1to1 mapping
+        return new Class[]{getImplementationClass(), getImplementationBaseClass()}; //two identifiers Base and MBI have 1to1 mapping
     }
 
     @Override
