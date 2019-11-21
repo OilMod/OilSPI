@@ -13,7 +13,7 @@ import static org.oilmod.util.LamdbaExceptionUtils.uncheck;
 
 public class TestMPI extends SingleMPI<TestMPI, TestMPI.TestHelper<?>> {
     public TestMPI() {
-        super(TestMPI.class, cast(TestHelper.class));
+        //super(TestMPI.class, cast(TestHelper.class));
     }
 
     @Override
@@ -27,9 +27,6 @@ public class TestMPI extends SingleMPI<TestMPI, TestMPI.TestHelper<?>> {
         System.out.println("TestMPI's StringMessageHandler received:" + s);
     }
 
-    public abstract static class TestHelper<Impl extends TestHelper<Impl>> extends ImplementationBase<TestMPI, TestHelper<?>, Impl> {
-        public TestHelper() {
-            super(TestMPI.class, cast(TestHelper.class));
-        }
+    public abstract static class TestHelper<Impl extends TestHelper<Impl>> extends SwapGenerics<TestHelper<?>, Impl, TestMPI> {
     }
 }

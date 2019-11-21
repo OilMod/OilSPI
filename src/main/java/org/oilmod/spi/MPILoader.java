@@ -1,6 +1,7 @@
 package org.oilmod.spi;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.apache.commons.lang3.Validate;
 import org.oilmod.spi.dependencies.DependencyGraph;
 import org.oilmod.spi.dependencies.DependencyPipe;
 import org.oilmod.spi.mpi.IModdingPIService;
@@ -56,5 +57,20 @@ public class MPILoader {
 
     public static void commitDependency(Object o) {
         dependencyGraph.consume(o);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public static void validateGenerics(Class[] mpi, Class[] impl, boolean implBase) {
+        Validate.isTrue(mpi[0] == impl[0], "Malformed generics, mpi does not match: %s vs %s", mpi[0], impl[0]);
+        Validate.isTrue(mpi[1].isAssignableFrom(impl[1]), "Malformed generics, implementation base does not match: %s is not assignable from %s", mpi[1], impl[1]);
+        if (implBase) {
+            Validate.isTrue(impl[2]==null, "Malformed generics, implementation base has implementation assigned! implementation base needs to be generic!");
+        } else {
+
+            Validate.isTrue(impl[1].isAssignableFrom(impl[2]), "Malformed generics, implementation does not match: %s is not assignable from %s", impl[1], impl[2]);
+        }
+
+
     }
 }

@@ -1,6 +1,10 @@
 package org.oilmod.spi.provider;
 
+import org.oilmod.spi.MPILoader;
 import org.oilmod.spi.mpi.IModdingPIService;
+import org.oilmod.util.Strings;
+
+import static org.oilmod.util.ReflectionUtils.resolveGenericSuperInterface;
 
 public abstract class ImplementationBase<MPI extends IModdingPIService<MPI, IB>, IB extends ImplementationBase<MPI, IB, ? extends IB>, Impl extends IB>  implements IMPIImplementationProvider<MPI, IB, Impl> {
     private MPI mpi;
@@ -10,6 +14,17 @@ public abstract class ImplementationBase<MPI extends IModdingPIService<MPI, IB>,
     public ImplementationBase(Class<MPI> mpiClass, Class<IB> ibClass) {
         this.mpiClass = mpiClass;
         this.ibClass = ibClass;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public ImplementationBase() {
+        Class<?>[] generics = resolveGenericSuperInterface(getClass(), IMPIImplementationProvider.class);
+        this.mpiClass = (Class<MPI>) generics[0];
+        this.ibClass = (Class<IB>) generics[1];
+
+        Class<?>[] mpi = resolveGenericSuperInterface(mpiClass, IModdingPIService.class);
+        MPILoader.validateGenerics(mpi, generics, false);
     }
 
     @Override
