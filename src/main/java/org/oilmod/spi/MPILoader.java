@@ -41,6 +41,7 @@ public class MPILoader {
 
         for(IMPIImplementationProvider provider:implSet) {
             IModdingPIService mpi = mpis.get(provider.getMPIClass());
+            Validate.notNull(mpi, "Could not find mpi with class %s",  provider.getMPIClass());
             provider.setup(mpi);
             mpi.addProvider(provider);
         }
@@ -61,13 +62,13 @@ public class MPILoader {
 
 
     @SuppressWarnings("unchecked")
-    public static void validateGenerics(Class[] mpi, Class[] impl, boolean implBase) {
+    public static void validateGenerics(Class[] mpi, Class[] impl, Class implGetClass, boolean implBase) {
         Validate.isTrue(mpi[0] == impl[0], "Malformed generics, mpi does not match: %s vs %s", mpi[0], impl[0]);
         Validate.isTrue(mpi[1].isAssignableFrom(impl[1]), "Malformed generics, implementation base does not match: %s is not assignable from %s", mpi[1], impl[1]);
         if (implBase) {
             Validate.isTrue(impl[2]==null, "Malformed generics, implementation base has implementation assigned! implementation base needs to be generic!");
         } else {
-
+            Validate.notNull(impl[2], "Could not resolve generics for impl: %1$s needs to extend %2$s generically! wrong: 'extends %2$s' correct: 'extends %2$s<%1$s>'", implGetClass.getSimpleName(), impl[1].getSimpleName());
             Validate.isTrue(impl[1].isAssignableFrom(impl[2]), "Malformed generics, implementation does not match: %s is not assignable from %s", impl[1], impl[2]);
         }
 

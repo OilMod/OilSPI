@@ -30,4 +30,14 @@ public interface IMPIImplementationProvider<MPI extends IModdingPIService<MPI, I
     default Class<IB> getProviderClass() {
         return getImplementationBaseClass();
     }
+
+    default void onReady() {
+
+    }
+
+    @Override
+    default void allDepResolved() {
+        IDependent.super.allDepResolved();
+        onReady();
+    }
 }

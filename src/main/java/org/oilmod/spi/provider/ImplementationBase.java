@@ -24,7 +24,7 @@ public abstract class ImplementationBase<MPI extends IModdingPIService<MPI, IB>,
         this.ibClass = (Class<IB>) generics[1];
 
         Class<?>[] mpi = resolveGenericSuperInterface(mpiClass, IModdingPIService.class);
-        MPILoader.validateGenerics(mpi, generics, false);
+        MPILoader.validateGenerics(mpi, generics, getClass(), false);
     }
 
     @Override

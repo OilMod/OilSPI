@@ -14,13 +14,29 @@ import java.util.stream.IntStream;
 public class ReflectionUtils {
 
     public static <T extends I, I> Class<?>[] resolveGenericSuperInterface(Class<T> clazz, Class<I> superInter) {
-        if (!superInter.isAssignableFrom(clazz)) throw new IllegalStateException("Class " + clazz.toString() + " does not extend " + superInter.toString());
-
+        checkTypeParams(clazz, superInter);
 
         Queue<ParameterizedType> trace = new LinkedList<>();
          if (!_resolveGenericSuperInterface(trace, clazz, superInter) || trace.size() == 0) throw new IllegalStateException("Could not find any generics?! huh");
 
-        ParameterizedType interfaceType = trace.poll();
+        return map(trace);
+    }
+
+    public static <T extends I, I> Class<?>[] resolveGenericSuperClass(Class<T> clazz, Class<I> superClass) {
+        checkTypeParams(clazz, superClass);
+
+        Queue<ParameterizedType> trace = new LinkedList<>();
+        if (!_resolveGenericSuperClass(trace, clazz, superClass) || trace.size() == 0) throw new IllegalStateException("Could not find any generics?! huh");
+
+        return map(trace);
+    }
+
+    private static <T extends I, I> void checkTypeParams(Class<T> clazz, Class<I> superr) {
+        if (!superr.isAssignableFrom(clazz)) throw new IllegalStateException("Class " + clazz.toString() + " does not extend " + superr.toString());
+    }
+
+    private static Class<?>[] map(Queue<ParameterizedType> trace) {
+        ParameterizedType interfaceType = trace.size()==1?trace.peek():trace.poll();
         Type[] last = interfaceType.getActualTypeArguments();
         Class<?>[] result = new Class<?>[last.length];
         int[] mapping = IntStream.rangeClosed(0, last.length-1).toArray();
@@ -70,7 +86,7 @@ public class ReflectionUtils {
                 System.out.println("currentType bounds are: " + currentTypes[j].getClass().getSimpleName());
             }
 
-            System.out.println("traces generics: " + Strings.concatArray(Type::getTypeName,type.getActualTypeArguments()));*/
+            System.out.println("traces generics: " + Strings.concatArray(Type::getTypeName,type.getActualTypeArguments()));/**/
         }
 
 
@@ -146,6 +162,27 @@ public class ReflectionUtils {
             if (sclazz == null)throw new IllegalStateException("there is no superclass of matching interface but interface still is assignable from class... huh?"); //reached Object (we should never get here hmm)
             if (_resolveGenericSuperInterface(trace ,sclazz, superInter)) {
                 Type type = clazz.getGenericSuperclass();
+                if (type instanceof ParameterizedType)trace.add((ParameterizedType) type);
+                return true;
+            }
+        }
+        throw new IllegalStateException("there is no superclass of matching interface but interface still is assignable from class... huh?"); //we should have already covered all cases?!
+    }
+
+
+    private static boolean _resolveGenericSuperClass(Queue<ParameterizedType> trace, Class<?> clazz, Class<?> superClass) {
+        if (!superClass.isAssignableFrom(clazz)) return false; //we are on the wrong track
+        //System.out.println("trace for class " + clazz.toGenericString() + " extends "  +  clazz.getGenericSuperclass().toString() + " and impl " + Strings.concatArray(clazz.getGenericInterfaces()));
+        //make sure we have a superclass, but we really should if we get here
+        if (!clazz.isInterface()) {
+            Class<?> sclazz = clazz.getSuperclass();
+            Type type = clazz.getGenericSuperclass();
+            if (sclazz == null)throw new IllegalStateException("there is no superclass of matching interface but interface still is assignable from class... huh?"); //reached Object (we should never get here hmm)
+            if (sclazz == superClass) {
+                trace.add((ParameterizedType) type);  //found it
+                return true;
+            }
+            if (_resolveGenericSuperClass(trace ,sclazz, superClass)) {
                 if (type instanceof ParameterizedType)trace.add((ParameterizedType) type);
                 return true;
             }

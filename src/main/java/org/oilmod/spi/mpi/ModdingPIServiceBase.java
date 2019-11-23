@@ -32,7 +32,7 @@ public abstract class ModdingPIServiceBase<MPI extends ModdingPIServiceBase<MPI,
         this.providerClass = (Class<Provider>) generics[1];
 
         Class<?>[] genericsImpl = resolveGenericSuperInterface(providerClass, IMPIImplementationProvider.class);
-        MPILoader.validateGenerics(generics, genericsImpl, true);
+        MPILoader.validateGenerics(generics, genericsImpl, genericsImpl[1], true);
     }
 
     @Override
