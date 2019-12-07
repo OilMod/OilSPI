@@ -31,12 +31,30 @@ public class MPILoader {
 
         Set<Class> implClassSet = implSet.stream().map(IMPIClassGetter::getMPIClass).collect(Collectors.toSet());
 
+
+        //creating default providers if needed
+        mpis.values().stream().filter(i->(!implClassSet.contains(i.getMPIClass()) && i.hasDefaultProvider()))
+                .peek(i-> i.addProvider(i.createDefaultProvider()))
+                .forEach(i->implClassSet.add(i.getMPIClass()));
+
+
+        //Making sure no actually provided MPI are ignored!
+        long wronglyIgnored =  ignored.stream().filter(c -> !implClassSet.contains(c))
+                .peek(i-> System.out.printf("Ignoring implementation for MPI %s even though it actually is provided!\n", i.getSimpleName()))
+                .count();
+
+        if (wronglyIgnored > 0) {
+            throw new IllegalStateException(String.format("Ignoring %d  provided implementations in total!", wronglyIgnored));
+        }
+
+
+        //checking for missing providers (not ignored/no default)
         long missing = mpis.values().stream().filter(i->!(implClassSet.contains(i.getMPIClass()) || ignored.contains(i.getMPIClass())))
                 .peek(i-> System.out.printf("Missing implementation of type %s for MPI %s\n", i.getProviderClass().getSimpleName(), i.getMPIClass().getSimpleName()))
                 .count();
 
         if (missing > 0) {
-            throw new IllegalStateException("Missing " + missing + " implementations in total!");
+            throw new IllegalStateException(String.format("Missing %d implementations in total! For %d of these this is ignored", missing +  ignored.size(), ignored.size()));
         }
 
         for(IMPIImplementationProvider provider:implSet) {
