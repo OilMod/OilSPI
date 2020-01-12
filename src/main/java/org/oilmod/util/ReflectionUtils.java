@@ -7,38 +7,69 @@ import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Stack;
+import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
 public class ReflectionUtils {
+    private static final IntFunction<boolean[]> ALL = boolean[]::new;
+
+    private static boolean[] createIgnore(int from, int to, int length) {
+        boolean[] result = new boolean[length];
+        for (int i = 0; i < from; i++) {
+            result[i] =true;
+        }
+        for (int i = to; i < length; i++) {
+            result[i] =true;
+        }
+        return result;
+    }
 
     public static <T extends I, I> Class<?>[] resolveGenericSuperInterface(Class<T> clazz, Class<I> superInter) {
+        return resolveGenericSuperInterface(clazz, superInter, ALL);
+    }
+
+    public static <T extends I, I> Class<?>[] resolveGenericSuperInterface(Class<T> clazz, Class<I> superInter , int from, int to) {
+
+        return resolveGenericSuperInterface(clazz, superInter, (l)->createIgnore(from, to, l));
+    }
+
+    public static <T extends I, I> Class<?>[] resolveGenericSuperInterface(Class<T> clazz, Class<I> superInter, IntFunction<boolean[]> ignore) {
         checkTypeParams(clazz, superInter);
 
         Queue<ParameterizedType> trace = new LinkedList<>();
          if (!_resolveGenericSuperInterface(trace, clazz, superInter) || trace.size() == 0) throw new IllegalStateException("Could not find any generics?! huh");
 
-        return map(trace);
+        return map(trace, ignore);
     }
 
     public static <T extends I, I> Class<?>[] resolveGenericSuperClass(Class<T> clazz, Class<I> superClass) {
+        return resolveGenericSuperClass(clazz, superClass, ALL);
+
+    }
+
+    public static <T extends I, I> Class<?>[] resolveGenericSuperClass(Class<T> clazz, Class<I> superClass, int from, int to) {
+        return resolveGenericSuperClass(clazz, superClass, (l)->createIgnore(from, to, l));
+    }
+
+    public static <T extends I, I> Class<?>[] resolveGenericSuperClass(Class<T> clazz, Class<I> superClass, IntFunction<boolean[]> ignore) {
         checkTypeParams(clazz, superClass);
 
         Queue<ParameterizedType> trace = new LinkedList<>();
         if (!_resolveGenericSuperClass(trace, clazz, superClass) || trace.size() == 0) throw new IllegalStateException("Could not find any generics?! huh");
 
-        return map(trace);
+        return map(trace, ignore);
     }
 
     private static <T extends I, I> void checkTypeParams(Class<T> clazz, Class<I> superr) {
         if (!superr.isAssignableFrom(clazz)) throw new IllegalStateException("Class " + clazz.toString() + " does not extend " + superr.toString());
     }
 
-    private static Class<?>[] map(Queue<ParameterizedType> trace) {
-        ParameterizedType interfaceType = trace.size()==1?trace.peek():trace.poll();
+    private static Class<?>[] map(Queue<ParameterizedType> trace, IntFunction<boolean[]> ignoreProvider) {
+        ParameterizedType interfaceType = trace.size()<=2?trace.peek():trace.poll();
         Type[] last = interfaceType.getActualTypeArguments();
         Class<?>[] result = new Class<?>[last.length];
         int[] mapping = IntStream.rangeClosed(0, last.length-1).toArray();
+        boolean[] ignoreArray = ignoreProvider.apply(last.length);
 
         /*
          * this is a greedy algorithm with no backtracking so it will break if two assignable generics swap position.
@@ -72,7 +103,7 @@ public class ReflectionUtils {
                         break;
                     }
                 }
-                if (!found)
+                if (!found&&!ignoreArray[i])
                     throw new IllegalStateException("Could not trace generics from interface to implementation");
             }
             last = currentTypes;

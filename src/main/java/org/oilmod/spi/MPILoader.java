@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@SuppressWarnings("rawtypes")
 public class MPILoader {
     private static DependencyGraph dependencyGraph;
     private static Set<Class<? extends IModdingPIService>> ignored = new ObjectOpenHashSet<>();
