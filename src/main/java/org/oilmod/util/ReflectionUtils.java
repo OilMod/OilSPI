@@ -110,10 +110,10 @@ public class ReflectionUtils {
             /*System.out.println("Current mappings is: " + Arrays.toString(mapping));
             for (int j = 0; j < currentTypes.length; j++) {
                 if (currentTypes[j] instanceof TypeVariable) {
-                    System.out.println("currentType bounds are: " + Strings.concatArray(t->t.getTypeName() + "(" + t.getClass().getSimpleName() + ")",((TypeVariable)currentTypes[j]).getBounds()));
+                    System.out.println("currentType bounds are: " + Strings.concatArray(t->t.getTypeName() + "(" + t.simpleName(getClass()) + ")",((TypeVariable)currentTypes[j]).getBounds()));
                 }
 
-                System.out.println("currentType bounds are: " + currentTypes[j].getClass().getSimpleName());
+                System.out.println("currentType bounds are: " + currentTypes[j].simpleName(getClass()));
             }
 
             System.out.println("traces generics: " + Strings.concatArray(Type::getTypeName,type.getActualTypeArguments()));/**/

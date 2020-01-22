@@ -51,7 +51,7 @@ public class DependencyNode {
     public void consumeOnMe(Object o) {
         for (Map.Entry<IDependency, DependencyNode> entry: onMeDeps.entrySet()) {
 
-            //System.out.println("Doing consumeOnMe from "+ dependent.getClass().getSimpleName() + " to call " + entry.getValue().dependent.getClass().getSimpleName() + " with " + o.getClass().getSimpleName());
+            //System.out.println("Doing consumeOnMe from "+ dependent.simpleName(getClass()) + " to call " + entry.getValue().dependent.simpleName(getClass()) + " with " + o.simpleName(getClass()));
             entry.getValue().check(o, entry.getKey());
         }
     }
@@ -63,9 +63,9 @@ public class DependencyNode {
         if (!dep.checkCandidate(o, true))return;
         boolean first = dep.accept(o);
         myDeps.remove(dep);
-        //System.out.println("removed " + dep.getDependencyClass().getSimpleName() + " from mydeps for " + dependent.getClass().getSimpleName());
+        //System.out.println("removed " + dep.simpleName(getDependencyClass()) + " from mydeps for " + dependent.simpleName(getClass()));
         if (first && areDepResolved()) {
-            //System.out.println("Calling initDependant for "+ dependent.getClass().getSimpleName());
+            //System.out.println("Calling initDependant for "+ dependent.simpleName(getClass()));
             initDependant();
         }
     }

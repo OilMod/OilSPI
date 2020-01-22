@@ -11,6 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.oilmod.util.Strings.simpleName;
+
 @SuppressWarnings("rawtypes")
 public class MPILoader {
     private static DependencyGraph dependencyGraph;
@@ -51,7 +53,7 @@ public class MPILoader {
 
         //checking for missing providers (not ignored/no default)
         long missing = mpis.values().stream().filter(i->!(implClassSet.contains(i.getMPIClass()) || ignored.contains(i.getMPIClass())))
-                .peek(i-> System.out.printf("Missing implementation of type %s for MPI %s\n", i.getProviderClass().getSimpleName(), i.getMPIClass().getSimpleName()))
+                .peek(i-> System.out.printf("Missing implementation of type %s for MPI %s\n", simpleName(i.getProviderClass()), simpleName(i.getMPIClass())))
                 .count();
 
         if (missing > 0) {

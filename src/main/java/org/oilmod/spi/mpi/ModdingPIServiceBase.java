@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static org.oilmod.util.LazyString.lazy;
 import static org.oilmod.util.ReflectionUtils.resolveGenericSuperInterface;
+import static org.oilmod.util.Strings.simpleName;
 
 public abstract class ModdingPIServiceBase<MPI extends ModdingPIServiceBase<MPI, Provider>, Provider extends IMPIImplementationProvider<MPI, Provider, ? extends Provider>> implements IModdingPIService<MPI, Provider> {
     private final Set<Provider> providers = new ObjectOpenHashSet<>();
@@ -37,7 +38,7 @@ public abstract class ModdingPIServiceBase<MPI extends ModdingPIServiceBase<MPI,
 
     @Override
     public void addProvider(Provider provider) {
-        Validate.isTrue(acceptMultiple() || providers.size() == 0, "Cannot set more than 1 provider for API %s! Got %s & %s ", getMPIClass().getSimpleName() , lazy(()->providers.iterator().next()), provider);
+        Validate.isTrue(acceptMultiple() || providers.size() == 0, "Cannot set more than 1 provider for API %s! Got %s & %s ", simpleName(getMPIClass()) , lazy(()->providers.iterator().next()), provider);
         providers.add(provider);
     }
 
