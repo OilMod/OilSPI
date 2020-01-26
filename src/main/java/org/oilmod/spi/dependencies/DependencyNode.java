@@ -77,8 +77,17 @@ public class DependencyNode {
 
 
     public void initDependant() {
-        dependent.allDepResolved();
-        graph.consume(dependent);
+        boolean noException = true;
+        try {
+            dependent.allDepResolved();
+        } catch (RuntimeException e){
+            DependentInitException initEx = new DependentInitException(dependent, e);
+            graph.exceptions.add(initEx);
+            noException = false;
+        }
+        if (noException) {
+            graph._consume(dependent);
+        }
     }
 
 }

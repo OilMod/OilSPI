@@ -1,9 +1,11 @@
 package org.oilmod.spi.dependencies;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.oilmod.util.ExceptionUtils;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ public class DependencyGraph {
     private Map<IDependent, DependencyNode> map = new Object2ObjectOpenHashMap<>();
     private Set<IDependency> dependencies = new ObjectOpenHashSet<>();
     private Set<IDependency> stageDeps = new ObjectOpenHashSet<>();
+    List<DependencyException> exceptions = new ObjectArrayList<>();
 
     public void initDependent(IDependent dependent) {
         if (dependencies.size() > 0) {
@@ -44,17 +47,29 @@ public class DependencyGraph {
     }
 
     public void consume(Object o) {
-        if (o instanceof IDependent) {
-            DependencyNode node = map.get((IDependent)o);
-            if (node != null) {
-                node.consumeOnMe(o);
-                return;
-            }
+        try {
+            _consume(o);
+        } finally {
+            if (exceptions.isEmpty())return;
+            ExceptionUtils.summarizeAndClear(exceptions, String.format("Could not consume %s as exception(s) occurred", o), DependencyException::new);
         }
-        stageDeps.stream().filter(d->d.checkType(o)&&d.checkCandidate(o, true)).forEach(dependency -> {
-            DependencyNode node = map.get(dependency.getDependent());
-            node.check(o, dependency);
-        });
+    }
+    void _consume(Object o) {
+        try {
+            if (o instanceof IDependent) {
+                DependencyNode node = map.get((IDependent)o);
+                if (node != null) {
+                    node.consumeOnMe(o);
+                    return;
+                }
+            }
+            stageDeps.stream().filter(d->d.checkType(o)&&d.checkCandidate(o, true)).forEach(dependency -> {
+                DependencyNode node = map.get(dependency.getDependent());
+                node.check(o, dependency);
+            });
+        } catch (RuntimeException e) {
+            exceptions.add(new DependencyException("Could not consume " + o, e));
+        }
     }
 
 
@@ -62,13 +77,21 @@ public class DependencyGraph {
     public void runGraph() {
         if (runGraphHasRun)throw new IllegalStateException("Cannot call runGraph more than once");
         runGraphHasRun = true;
-        //we need to do this are out filter condition is affected by side effect. lol
-        Set<DependencyNode> independentNotes = map.values().stream().filter(DependencyNode::areDepResolved).collect(Collectors.toSet());
 
-        for (DependencyNode dependencyNode : independentNotes) {
-            if (dependencyNode.areDepResolved()) {
-                dependencyNode.initDependant();
+
+        try {
+            //we need to do this are out filter condition is affected by side effect. lol
+            Set<DependencyNode> independentNotes = map.values().stream().filter(DependencyNode::areDepResolved).collect(Collectors.toSet());
+
+            for (DependencyNode dependencyNode : independentNotes) {
+                if (dependencyNode.areDepResolved()) {
+                    dependencyNode.initDependant();
+                }
             }
+        } finally {
+            if (exceptions.isEmpty())return;
+            ExceptionUtils.summarizeAndClear(exceptions, "Could not finished traversing graph as exception(s) occurred", DependencyException::new);
         }
+
     }
 }
