@@ -47,7 +47,7 @@ public class MPILoader {
                 .count();
 
         if (wronglyIgnored > 0) {
-            throw new IllegalStateException(String.format("Ignoring %d  provided implementations in total!", wronglyIgnored));
+            throw new IllegalStateException(String.format("Ignoring %d provided implementations in total!", wronglyIgnored));
         }
 
 
