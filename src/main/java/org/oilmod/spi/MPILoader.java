@@ -37,7 +37,7 @@ public class MPILoader {
 
         //creating default providers if needed
         mpis.values().stream().filter(i->(!implClassSet.contains(i.getMPIClass()) && i.hasDefaultProvider()))
-                .peek(i-> i.addProvider(i.createDefaultProvider()))
+                .peek(i->implSet.add(i.createDefaultProvider()))
                 .forEach(i->implClassSet.add(i.getMPIClass()));
 
 
