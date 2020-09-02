@@ -50,14 +50,15 @@ public class MPILoader {
             throw new IllegalStateException(String.format("Ignoring %d provided implementations in total!", wronglyIgnored));
         }
 
-
+        StringBuilder missingSb = new StringBuilder();
         //checking for missing providers (not ignored/no default)
         long missing = mpis.values().stream().filter(i->!(implClassSet.contains(i.getMPIClass()) || ignored.contains(i.getMPIClass())))
-                .peek(i-> System.out.printf("Missing implementation of type %s for MPI %s\n", simpleName(i.getProviderClass()), simpleName(i.getMPIClass())))
+                .peek(i-> missingSb.append(String.format("Missing implementation of type %s for MPI %s\n", simpleName(i.getProviderClass()), simpleName(i.getMPIClass()))))
                 .count();
 
+
         if (missing > 0) {
-            throw new IllegalStateException(String.format("Missing %d implementations in total! For %d of these this is ignored", missing +  ignored.size(), ignored.size()));
+            throw new IllegalStateException(String.format("Missing %d implementations in total! For %d of these this is ignored:. Missing %s", missing +  ignored.size(), ignored.size(), missingSb));
         }
 
         for(IMPIImplementationProvider provider:implSet) {
